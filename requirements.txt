@@ -1,0 +1,9 @@
+# === 图形化界面 ===
+PyQt5>=5.15.10
+# === video2photo ===
+opencv-python
+# 或选择以下轻量替代方案(需前往src/Video2Photo.py中手动注释cv版本代码)：
+# imageio[pyav]
+# Pillow
+# === json2xml ===
+dicttoxml 
