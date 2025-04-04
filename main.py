@@ -1,7 +1,8 @@
 """
-PyQt界面 v0.8 by FepTs
+PyQt界面 v0.9 by FepTs
 
 更新日志:
+v0.9:数据集分割功能更新，src新增更多功能，常用功能后续会继续集成到图形化界面里
 v0.8:修复comparefolders的bug，现在可以实时看到命令行的输出信息
 v0.7:描述，提示更改，优化细节
 v0.6:增加新的集成功能，大部分已有功能集成完毕
@@ -166,6 +167,11 @@ class DatasetSplitPanel(BasePanel):
         self.ratioLine = QtWidgets.QLineEdit()
         self.ratioLine.setPlaceholderText("0.0-1.0，例如：0.8")
         self.layout.addRow("训练集比例:", self.ratioLine)
+        
+        # 添加任务类型选择
+        self.taskComboBox = QtWidgets.QComboBox()
+        self.taskComboBox.addItems(["目标检测任务", "目标分类任务"])
+        self.layout.addRow("任务类型:", self.taskComboBox)
 
 
 class GenerationLabelsPanel(BasePanel):
@@ -209,7 +215,7 @@ class MainWindow(QtWidgets.QWidget):
     """主窗口"""
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.setWindowTitle("YoloUtilities-v0.8")
+        self.setWindowTitle("YoloUtilities-v0.9")
         self.resize(800, 600)
         self.init_ui()
 
@@ -291,7 +297,7 @@ class MainWindow(QtWidgets.QWidget):
             "Json2TxtV1": "【JSON转TXT功能(v1)】\n将输入文件夹中的JSON文件转换为TXT格式。（简化的json版本，如labelme）\n参数：\n- 输入文件夹路径\n- 输出文件夹路径\n- 类别映射",
             "Json2TxtV2": "【JSON转TXT功能(v2)】\n将输入文件夹中的JSON文件转换为TXT格式。（通用json版本）\n参数：\n- 输入文件夹路径\n- 输出文件夹路径\n- 类别映射",
             "CompareFolders": "【比较文件夹功能】\n比较两个目录中文件名是否相同，可以用于检验标签文件或图像的丢失。\n支持一键删除多余文件\n参数：\n- 文件夹1路径\n- 文件夹2路径",
-            "DatasetSplit": "【数据集分割功能】\n用于图像分割数据集的制作，将数据集划分为训练集和验证集。\n参数：\n- 原始数据集路径\n- 输出数据集路径\n- 训练集比例",
+            "DatasetSplit": "【数据集分割功能】\n用于图像分割数据集的制作，将数据集划分为训练集和验证集。\n支持两种任务类型：\n1. 目标检测任务：输入目录需包含 images/ 和 labels/ 文件夹\n2. 目标分类任务：输入目录下每个子文件夹代表一个类别\n参数：\n- 原始数据集路径\n- 输出数据集路径\n- 训练集比例\n- 任务类型",
             "GenerationLabels": "【生成标签功能】\n用于给所有图片生成相同测试标签。\n参数：\n- 图片文件夹路径\n- 标签输出路径\n- 标签内容",
             "BatchDeletion": "【批量删除功能】\n用于批量删除指定文件夹中包含特定字符特征的文件。\n参数：\n- 文件夹路径\n- 文件名特征（例如：train, *, ()）\n- 文件后缀（例如：.txt, .jpg）",
             "Rename": "【批量重命名功能】\n用于重命名文件夹中的文件，支持指定后缀或重命名所有文件。\n参数：\n- 文件夹路径\n- 文件后缀（例如：jpg, png，输入all处理所有文件）\n- 起始编号"
@@ -371,6 +377,7 @@ class MainWindow(QtWidgets.QWidget):
                 input_dir = self.panels["DatasetSplit"].inputDirLine.text().strip()
                 output_dir = self.panels["DatasetSplit"].outputDirLine.text().strip()
                 ratio_str = self.panels["DatasetSplit"].ratioLine.text().strip()
+                task_index = self.panels["DatasetSplit"].taskComboBox.currentIndex()
                 if not input_dir or not output_dir or not ratio_str:
                     QtWidgets.QMessageBox.warning(self, "警告", "请填写所有参数！")
                     return
@@ -383,7 +390,7 @@ class MainWindow(QtWidgets.QWidget):
                     return
                 module = importlib.import_module("src.DatasetSplit")
                 func = module.main
-                args = (input_dir, output_dir, ratio)
+                args = (input_dir, output_dir, ratio, str(task_index))
 
             elif function_name == "GenerationLabels":
                 input_dir = self.panels["GenerationLabels"].inputDirLine.text().strip()
