@@ -1,11 +1,10 @@
 """
-v1.0
-用于合并两个目录下同名标注文件的内容。
+v1.1
+用于合并两个目录下同名标注文件的内容。修复not readable的bug。
 遍历文件夹1和文件夹2中所有txt文件，
 对于在两个文件夹中同名的txt文件，将文件夹2中的内容合并追加到文件夹1对应的文件中。
 """
 import os
-
 
 def merge_annotation_files(folder1, folder2):
     """
@@ -42,22 +41,22 @@ def merge_annotation_files(folder1, folder2):
 
         # 如果文件夹2中的内容非空，则合并到文件夹1中
         if content2.strip():
-            with open(file1_path, 'a', encoding='utf-8') as f1:
-                # 检查文件夹1中的文件是否以换行结束，如果没有，则添加一个换行
-                f1.seek(0, os.SEEK_END)
+            # 采用 a+ 模式既能追加又能读取
+            with open(file1_path, 'a+', encoding='utf-8') as f1:
+                f1.flush()  # 确保缓冲区数据写入文件
+                f1.seek(0, os.SEEK_END)  # 定位到文件末尾
                 if f1.tell() > 0:
                     f1.seek(f1.tell() - 1)
-                    if f1.read(1) != "\n":
+                    last_char = f1.read(1)
+                    if last_char != "\n":
                         f1.write("\n")
                 f1.write(content2)
             print(f"合并文件: {files1[basename]}")
         else:
             print(f"文件 {files2[basename]} 内容为空，跳过合并。")
 
-
 def main(folder1, folder2):
     merge_annotation_files(folder1, folder2)
-
 
 if __name__ == "__main__":
     # 需要修改的部分：修改为你的实际文件夹路径
