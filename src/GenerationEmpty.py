@@ -42,6 +42,6 @@ def main(folder1, folder2):
 
 if __name__ == "__main__":
     # 需要修改的部分：修改为你的实际文件夹路径
-    folder1 = r"E:\Project\yolo\dataset\ParkingViolations_4output_perfect\ParkingViolations_4output_perfect\ParkingViolations_4output_latest\val\images"  # 文件夹1路径（包含图片等文件）
-    folder2 = r"E:\Project\yolo\dataset\ParkingViolations_4output_perfect\ParkingViolations_4output_perfect\ParkingViolations_4output_latest\val\labels"  # 文件夹2路径（包含标注txt文件）
+    folder1 = r"E:\Project\val\images"  # 文件夹1路径（包含图片等文件）
+    folder2 = r"E:\Project\val\labels"  # 文件夹2路径（包含标注txt文件）
     main(folder1, folder2)

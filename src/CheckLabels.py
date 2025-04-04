@@ -1,15 +1,15 @@
 """
-v1.0
+v1.1
 用于清洗YOLO标注文件中的类别编号
-例如：仅需要0、1类，某个标注文件中包含类别2、4、5的行，将被清除，仅保留合法的0或1类数据。
+例如：仅需要0、1类，某个标注文件中包含类别2、4、5的行将被清除，仅保留合法的标注数据。
 """
 import os
 
 
-def clean_labels(folder_path):
+def clean_labels(folder_path, valid_classes):
     """
     遍历指定文件夹中的所有txt文件，逐行检查类标签，
-    只保留对应类标签的标注行，其它行将被删除。
+    只保留在 valid_classes 列表中的标注行，其它行将被删除。
     """
     if not os.path.exists(folder_path) or not os.path.isdir(folder_path):
         print(f"错误: {folder_path} 不是有效的文件夹路径。")
@@ -30,8 +30,7 @@ def clean_labels(folder_path):
                 continue
             try:
                 class_id = int(parts[0])
-                # 在这里修改需要的类别编号
-                if class_id in [0, 1]:
+                if class_id in valid_classes:
                     valid_lines.append(line)
             except ValueError:
                 # 类别标签不是整数的行自动忽略
@@ -46,11 +45,19 @@ def clean_labels(folder_path):
             print(f"无变化: {file_name}")
 
 
-def main(folder_path):
-    clean_labels(folder_path)
+def main(folder_path, valid_classes):
+    clean_labels(folder_path, valid_classes)
 
 
 if __name__ == "__main__":
-    # 需要修改的部分：修改为你的标注文件所在文件夹路径
-    folder_path = r"E:\Project\yolo\dataset\ParkingViolations_4output_perfect\ParkingViolations_4output_perfect\ParkingViolations_4output_perfect\train\labels"  # 标注文件夹路径
-    main(folder_path)
+    # 用户输入标注文件夹路径
+    folder_path = input("请输入标注文件所在文件夹路径：").strip()
+    # 用户输入需要保留的类别编号（以逗号分隔，例如：0,1）
+    classes_str = input("请输入需要保留的类别编号（以逗号分隔，如 0,1）：").strip()
+    try:
+        valid_classes = [int(cls.strip()) for cls in classes_str.split(',') if cls.strip() != '']
+    except ValueError:
+        print("输入的类别编号格式不正确，请输入数字并以逗号分隔。")
+        exit(1)
+
+    main(folder_path, valid_classes)

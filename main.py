@@ -1,7 +1,8 @@
 """
-PyQt界面 v0.9 by FepTs
+PyQt界面 v1.0 by FepTs
 
 更新日志:
+v1.0:三个新功能已集成，面板重置，分为三个标签页，更加美观，某些功能小细节优化
 v0.9:数据集分割功能更新，src新增更多功能，常用功能后续会继续集成到图形化界面里
 v0.8:修复comparefolders的bug，现在可以实时看到命令行的输出信息
 v0.7:描述，提示更改，优化细节
@@ -185,6 +186,24 @@ class GenerationLabelsPanel(BasePanel):
         self.layout.addRow("标签内容:", self.labelContentLine)
 
 
+class GenerationEmptyPanel(BasePanel):
+    """生成空白标注功能面板"""
+    def __init__(self, parent=None):
+        super(GenerationEmptyPanel, self).__init__(parent)
+        self.folder1Line = self.add_dir_selector("图片文件夹路径:", None)
+        self.folder2Line = self.add_dir_selector("标注文件夹路径:", None)
+
+
+class CheckLabelsPanel(BasePanel):
+    """检查标签功能面板"""
+    def __init__(self, parent=None):
+        super(CheckLabelsPanel, self).__init__(parent)
+        self.folderLine = self.add_dir_selector("标注文件夹路径:", None)
+        self.classesLine = QtWidgets.QLineEdit()
+        self.classesLine.setPlaceholderText("以逗号分隔，例如：0,1")
+        self.layout.addRow("需要保留的类别编号:", self.classesLine)
+
+
 class BatchDeletionPanel(BasePanel):
     """批量删除功能面板"""
     def __init__(self, parent=None):
@@ -211,38 +230,78 @@ class RenamePanel(BasePanel):
         self.layout.addRow("起始编号:", self.startNumberLine)
 
 
+class MergeLabelsPanel(BasePanel):
+    """合并标签功能面板"""
+    def __init__(self, parent=None):
+        super(MergeLabelsPanel, self).__init__(parent)
+        self.folder1Line = self.add_dir_selector("目标标注文件夹路径:", None)
+        self.folder2Line = self.add_dir_selector("待合并标注文件夹路径:", None)
+
+
 class MainWindow(QtWidgets.QWidget):
     """主窗口"""
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.setWindowTitle("YoloUtilities-v0.9")
+        self.setWindowTitle("YoloUtilities-v1.0")
         self.resize(800, 600)
         self.init_ui()
 
     def init_ui(self):
         main_layout = QtWidgets.QVBoxLayout()
 
-        # 功能选择按钮区域
-        button_layout = QtWidgets.QHBoxLayout()
-        self.function_buttons = []
-        functions = [
-            ("Video2Photo", "视频转图片"),
-            ("Json2TxtV1", "JSON转TXT(v1)"),
-            ("Json2TxtV2", "JSON转TXT(v2)"),
-            ("CompareFolders", "比较文件夹"),
-            ("DatasetSplit", "数据集分割"),
-            ("GenerationLabels", "生成标签"),
-            ("BatchDeletion", "批量删除"),
-            ("Rename", "批量重命名")
-        ]
+        # 创建标签页
+        self.tab_widget = QtWidgets.QTabWidget()
         
-        for func_name, display_name in functions:
+        # 常用功能标签页
+        common_tab = QtWidgets.QWidget()
+        common_layout = QtWidgets.QGridLayout()
+        common_buttons = [
+            ("DatasetSplit", "数据集分割"),
+            ("Video2Photo", "视频转图片"),
+            ("Rename", "批量重命名"),
+            ("CompareFolders", "比较文件夹")
+        ]
+        for i, (func_name, display_name) in enumerate(common_buttons):
             btn = QtWidgets.QPushButton(display_name)
             btn.clicked.connect(lambda checked, name=func_name: self.switch_function(name))
-            button_layout.addWidget(btn)
-            self.function_buttons.append(btn)
-        
-        main_layout.addLayout(button_layout)
+            common_layout.addWidget(btn, i // 2, i % 2)
+        common_tab.setLayout(common_layout)
+        self.tab_widget.addTab(common_tab, "常用功能")
+
+        # 标注处理标签页
+        annotation_tab = QtWidgets.QWidget()
+        annotation_layout = QtWidgets.QGridLayout()
+        annotation_buttons = [
+            ("Json2TxtV1", "JSON转TXT(v1)"),
+            ("Json2TxtV2", "JSON转TXT(v2)"),
+            ("GenerationLabels", "生成标签"),
+            ("GenerationEmpty", "生成空白标注"),
+            ("CheckLabels", "检查标签"),
+            ("MergeLabels", "合并标签")
+        ]
+        for i, (func_name, display_name) in enumerate(annotation_buttons):
+            btn = QtWidgets.QPushButton(display_name)
+            btn.clicked.connect(lambda checked, name=func_name: self.switch_function(name))
+            annotation_layout.addWidget(btn, i // 2, i % 2)
+        annotation_tab.setLayout(annotation_layout)
+        self.tab_widget.addTab(annotation_tab, "标注处理")
+
+        # 文件管理标签页
+        file_tab = QtWidgets.QWidget()
+        file_layout = QtWidgets.QGridLayout()
+        file_buttons = [
+            ("BatchDeletion", "批量删除")
+        ]
+        for i, (func_name, display_name) in enumerate(file_buttons):
+            btn = QtWidgets.QPushButton(display_name)
+            btn.clicked.connect(lambda checked, name=func_name: self.switch_function(name))
+            file_layout.addWidget(btn, i // 2, i % 2)
+        file_tab.setLayout(file_layout)
+        self.tab_widget.addTab(file_tab, "文件管理")
+
+        # 设置标签页的最大高度
+        self.tab_widget.setMaximumHeight(150)
+        main_layout.addWidget(self.tab_widget)
 
         # 功能描述显示区
         self.description_label = QtWidgets.QLabel("请在上方选择功能\n使用对应功能前，请确保所需的库已安装\n警告：删除操作无法撤销，请再三核对参数后谨慎使用！！!")
@@ -258,8 +317,11 @@ class MainWindow(QtWidgets.QWidget):
             "CompareFolders": CompareFoldersPanel(),
             "DatasetSplit": DatasetSplitPanel(),
             "GenerationLabels": GenerationLabelsPanel(),
+            "GenerationEmpty": GenerationEmptyPanel(),
+            "CheckLabels": CheckLabelsPanel(),
             "BatchDeletion": BatchDeletionPanel(),
-            "Rename": RenamePanel()
+            "Rename": RenamePanel(),
+            "MergeLabels": MergeLabelsPanel()
         }
         
         for panel in self.panels.values():
@@ -299,8 +361,11 @@ class MainWindow(QtWidgets.QWidget):
             "CompareFolders": "【比较文件夹功能】\n比较两个目录中文件名是否相同，可以用于检验标签文件或图像的丢失。\n支持一键删除多余文件\n参数：\n- 文件夹1路径\n- 文件夹2路径",
             "DatasetSplit": "【数据集分割功能】\n用于图像分割数据集的制作，将数据集划分为训练集和验证集。\n支持两种任务类型：\n1. 目标检测任务：输入目录需包含 images/ 和 labels/ 文件夹\n2. 目标分类任务：输入目录下每个子文件夹代表一个类别\n参数：\n- 原始数据集路径\n- 输出数据集路径\n- 训练集比例\n- 任务类型",
             "GenerationLabels": "【生成标签功能】\n用于给所有图片生成相同测试标签。\n参数：\n- 图片文件夹路径\n- 标签输出路径\n- 标签内容",
+            "GenerationEmpty": "【生成空白标注功能】\n用于比较两个目录中文件名是否存在对应的标注文件，\n如果第二个目录不包含与第一个目录中同名（不包括后缀）的标注文件，\n则在第二个目录生成一个空白txt文件。\n参数：\n- 图片文件夹路径（文件夹1）\n- 标注文件夹路径（文件夹2）",
+            "CheckLabels": "【检查标签功能】\n用于清洗YOLO标注文件中的类别编号。\n例如：仅需要0、1类，某个标注文件中包含类别2、4、5的行将被清除，\n仅保留合法的标注数据。\n参数：\n- 标注文件夹路径\n- 需要保留的类别编号（以逗号分隔，例如：0,1）",
             "BatchDeletion": "【批量删除功能】\n用于批量删除指定文件夹中包含特定字符特征的文件。\n参数：\n- 文件夹路径\n- 文件名特征（例如：train, *, ()）\n- 文件后缀（例如：.txt, .jpg）",
-            "Rename": "【批量重命名功能】\n用于重命名文件夹中的文件，支持指定后缀或重命名所有文件。\n参数：\n- 文件夹路径\n- 文件后缀（例如：jpg, png，输入all处理所有文件）\n- 起始编号"
+            "Rename": "【批量重命名功能】\n用于重命名文件夹中的文件，支持指定后缀或重命名所有文件。\n参数：\n- 文件夹路径\n- 文件后缀（例如：jpg, png，输入all处理所有文件）\n- 起始编号",
+            "MergeLabels": "【合并标签功能】\n用于合并两个目录下同名标注文件的内容。\n遍历文件夹1和文件夹2中所有txt文件，对于在两个文件夹中同名的txt文件，\n将文件夹2中的内容合并追加到文件夹1对应的文件中。\n参数：\n- 目标标注文件夹路径（文件夹1）\n- 待合并标注文件夹路径（文件夹2）"
         }
 
         # 初始化工作线程
@@ -403,6 +468,31 @@ class MainWindow(QtWidgets.QWidget):
                 func = module.main
                 args = (input_dir, output_dir, label_content)
 
+            elif function_name == "GenerationEmpty":
+                folder1 = self.panels["GenerationEmpty"].folder1Line.text().strip()
+                folder2 = self.panels["GenerationEmpty"].folder2Line.text().strip()
+                if not folder1 or not folder2:
+                    QtWidgets.QMessageBox.warning(self, "警告", "请填写所有参数！")
+                    return
+                module = importlib.import_module("src.GenerationEmpty")
+                func = module.main
+                args = (folder1, folder2)
+
+            elif function_name == "CheckLabels":
+                folder_path = self.panels["CheckLabels"].folderLine.text().strip()
+                classes_str = self.panels["CheckLabels"].classesLine.text().strip()
+                if not folder_path or not classes_str:
+                    QtWidgets.QMessageBox.warning(self, "警告", "请填写所有参数！")
+                    return
+                try:
+                    valid_classes = [int(cls.strip()) for cls in classes_str.split(',') if cls.strip() != '']
+                except ValueError:
+                    QtWidgets.QMessageBox.warning(self, "警告", "类别编号格式不正确，请输入数字并以逗号分隔！")
+                    return
+                module = importlib.import_module("src.CheckLabels")
+                func = module.main
+                args = (folder_path, valid_classes)
+
             elif function_name == "BatchDeletion":
                 input_dir = self.panels["BatchDeletion"].inputDirLine.text().strip()
                 feature = self.panels["BatchDeletion"].featureLine.text().strip()
@@ -431,6 +521,16 @@ class MainWindow(QtWidgets.QWidget):
                 module = importlib.import_module("src.Rename")
                 func = module.main
                 args = (input_dir, extension, start_number)
+
+            elif function_name == "MergeLabels":
+                folder1 = self.panels["MergeLabels"].folder1Line.text().strip()
+                folder2 = self.panels["MergeLabels"].folder2Line.text().strip()
+                if not folder1 or not folder2:
+                    QtWidgets.QMessageBox.warning(self, "警告", "请填写所有参数！")
+                    return
+                module = importlib.import_module("src.MergeLabels")
+                func = module.main
+                args = (folder1, folder2)
 
             self.output_text.append("开始执行...\n")
             self.worker = Worker(func, args)

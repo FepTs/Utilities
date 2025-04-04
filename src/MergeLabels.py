@@ -61,6 +61,6 @@ def main(folder1, folder2):
 
 if __name__ == "__main__":
     # 需要修改的部分：修改为你的实际文件夹路径
-    folder1 = r"C:\Users\张轶博\Desktop\ParkingViolations_12output\labels01"  # 文件夹1路径（目标标注文件目录）
-    folder2 = r"C:\Users\张轶博\Desktop\ParkingViolations_12output\labels2345"  # 文件夹2路径（待合并的标注文件目录）
+    folder1 = r"C:\Users\labels01"  # 文件夹1路径（目标标注文件目录）
+    folder2 = r"C:\Users\labels2345"  # 文件夹2路径（待合并的标注文件目录）
     main(folder1, folder2)
