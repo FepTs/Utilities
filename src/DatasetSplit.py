@@ -1,5 +1,5 @@
 """
-v1.1
+v1.2
 用于数据集制作，支持目标检测和目标分类任务。
 
 目标检测任务：
@@ -156,9 +156,10 @@ def main(input_path, output_path, train_ratio, task):
     根据任务模式调用相应的数据集划分函数
     '0'代表目标检测，'1'代表目标分类
     """
-    # 删除已有的输出目录，避免干扰
-    if os.path.exists(output_path):
-        shutil.rmtree(output_path)
+    # 检查输出目录是否存在且非空，若非空则终止操作以防数据丢失
+    if os.path.exists(output_path) and os.listdir(output_path):
+        print(f"错误: 输出目录 {output_path} 非空，请选择一个空目录作为输出目录，避免数据丢失。")
+        return
 
     if task == '0':
         # 目标检测任务：输入目录需包含 images/ 和 labels/ 文件夹
