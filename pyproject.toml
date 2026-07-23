@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "yolo-utilities"
+version = "2.0.0"
+description = "Lightweight and reliable YOLO dataset utilities"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "FepTs" }]
+dependencies = []
+
+[project.scripts]
+yolo-utilities = "yolo_utils.cli:main"
+yolo-utilities-gui = "yolo_utils.gui:run"
+
+[tool.setuptools.packages.find]
+include = ["yolo_utils*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
