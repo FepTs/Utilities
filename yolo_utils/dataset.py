@@ -122,7 +122,8 @@ def split_detection_dataset(
     samples, skipped, orphaned = collect_detection_samples(source)
 
     shuffled = list(samples)
-    random.Random(seed).shuffle(shuffled)
+    # A seeded PRNG is intentional: this is reproducible dataset sampling, not security.
+    random.Random(seed).shuffle(shuffled)  # NOSONAR
     train_size = _split_count(len(shuffled), ratio)
     grouped = {"train": shuffled[:train_size], "val": shuffled[train_size:]}
     report = SplitReport(
@@ -172,7 +173,8 @@ def split_classification_dataset(
     if not class_dirs:
         raise UtilityError("输入目录中没有找到类别子目录。")
 
-    rng = random.Random(seed)
+    # A seeded PRNG is intentional: this is reproducible dataset sampling, not security.
+    rng = random.Random(seed)  # NOSONAR
     grouped: dict[str, dict[str, list[Path]]] = {}
     for class_dir in class_dirs:
         images = visible_files(class_dir, IMAGE_SUFFIXES)
