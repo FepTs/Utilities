@@ -1,2 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments and build output
+.venv/
+.venv-*/
+build/
+dist/
+*.egg-info/
+*.spec.bak
+
+# IDE and operating-system files
 .idea/
-.idea
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local executable artifacts
+YoloUtilities.exe

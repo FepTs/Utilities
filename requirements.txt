@@ -1,9 +1,2 @@
-# === 图形化界面 ===
-PyQt5>=5.15.10
-# === video2photo ===
-opencv-python
-# 或选择以下轻量替代方案(需前往src/Video2Photo.py中手动注释cv版本代码)：
-# imageio[pyav]
-# Pillow
-# === json2xml ===
-dicttoxml 
+# YOLO Utilities 2.0 的基础运行时仅使用 Python 标准库。
+# 视频抽帧会按需调用 PATH 中的 FFmpeg，不需要安装 OpenCV。
