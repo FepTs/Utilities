@@ -174,13 +174,13 @@ def split_classification_dataset(
         raise UtilityError("输入目录中没有找到类别子目录。")
 
     # A seeded PRNG is intentional: this is reproducible dataset sampling, not security.
-    rng = random.Random(seed)  # NOSONAR
+    rng = random.Random(seed)
     grouped: dict[str, dict[str, list[Path]]] = {}
     for class_dir in class_dirs:
         images = visible_files(class_dir, IMAGE_SUFFIXES)
         if len(images) < 2:
             raise UtilityError(f"类别“{class_dir.name}”至少需要 2 张图片。")
-        rng.shuffle(images)
+        rng.shuffle(images)  # NOSONAR
         train_size = _split_count(len(images), ratio)
         grouped[class_dir.name] = {
             "train": images[:train_size],
